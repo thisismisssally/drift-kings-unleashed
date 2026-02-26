@@ -1,0 +1,1141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Drift Kings: Unleashed — HUD Concept</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Rajdhani:wght@300;400;500;600;700&family=Bebas+Neue&display=swap');
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --accent: #FF4500;
+  --accent-glow: #FF6A33;
+  --cyan: #00E5FF;
+  --cyan-dim: #00E5FF66;
+  --green: #39FF14;
+  --yellow: #FFD600;
+  --red: #FF1744;
+  --white: #F0F0F0;
+  --dim: #ffffff55;
+  --glass: rgba(10, 12, 20, 0.65);
+  --glass-border: rgba(255, 255, 255, 0.08);
+}
+
+html, body {
+  width: 100%; height: 100%;
+  background: #0a0c14;
+  font-family: 'Rajdhani', sans-serif;
+  color: var(--white);
+  overflow: hidden;
+  user-select: none;
+}
+
+/* ═══ BACKGROUND SCENE ═══ */
+.scene {
+  position: fixed; inset: 0;
+  background: 
+    radial-gradient(ellipse 120% 60% at 50% 100%, #1a1025 0%, transparent 70%),
+    radial-gradient(ellipse 80% 40% at 20% 30%, #0d1a2d 0%, transparent 60%),
+    radial-gradient(ellipse 60% 30% at 80% 20%, #1a0d1f 0%, transparent 50%),
+    linear-gradient(180deg, #060810 0%, #0c1020 40%, #15102a 100%);
+  overflow: hidden;
+}
+
+/* City skyline silhouette */
+.skyline {
+  position: absolute; bottom: 0; left: 0; right: 0; height: 45%;
+  background: 
+    linear-gradient(0deg, #0a0c14 0%, transparent 100%);
+}
+
+.building {
+  position: absolute; bottom: 0;
+  background: linear-gradient(180deg, #0e1018 0%, #080a10 100%);
+  border-top: 1px solid rgba(255,69,0,0.15);
+}
+
+.building::before {
+  content: ''; position: absolute; inset: 4px;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent 0px, transparent 8px,
+    rgba(255,200,50,0.03) 8px, rgba(255,200,50,0.03) 10px
+  ),
+  repeating-linear-gradient(
+    90deg,
+    transparent 0px, transparent 12px,
+    rgba(255,200,50,0.02) 12px, rgba(255,200,50,0.02) 14px
+  );
+}
+
+/* Window lights */
+.window-row {
+  position: absolute;
+  display: flex; gap: 3px; flex-wrap: wrap;
+}
+
+.window-light {
+  width: 3px; height: 4px;
+  background: rgba(255, 200, 50, 0.4);
+  animation: windowFlicker 4s infinite ease-in-out;
+}
+
+.window-light.off { opacity: 0.05; }
+.window-light.bright { background: rgba(255, 220, 100, 0.7); }
+
+@keyframes windowFlicker {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.7; }
+}
+
+/* Road */
+.road {
+  position: absolute; bottom: 0; left: 0; right: 0; height: 22%;
+  background: linear-gradient(180deg, #12141e 0%, #0a0c14 100%);
+  perspective: 800px;
+}
+
+.road-surface {
+  position: absolute; inset: 0;
+  background: linear-gradient(180deg, 
+    rgba(30,33,50,0.8) 0%,
+    rgba(20,22,35,0.9) 100%
+  );
+  transform: rotateX(45deg);
+  transform-origin: bottom center;
+}
+
+.road-lines {
+  position: absolute; bottom: 5%; left: 0; right: 0; height: 2px;
+  background: repeating-linear-gradient(90deg,
+    var(--yellow) 0px, var(--yellow) 40px,
+    transparent 40px, transparent 80px
+  );
+  opacity: 0.4;
+  animation: roadScroll 0.8s linear infinite;
+}
+
+@keyframes roadScroll {
+  to { transform: translateX(-80px); }
+}
+
+/* Neon reflections on road */
+.neon-reflection {
+  position: absolute; bottom: 2%; height: 15%;
+  width: 120px;
+  filter: blur(20px);
+  opacity: 0.15;
+  animation: reflectionPulse 3s ease-in-out infinite;
+}
+
+@keyframes reflectionPulse {
+  0%, 100% { opacity: 0.1; }
+  50% { opacity: 0.2; }
+}
+
+/* Stars */
+.stars {
+  position: absolute; inset: 0;
+}
+
+.star {
+  position: absolute;
+  width: 2px; height: 2px;
+  background: white;
+  border-radius: 50%;
+  animation: twinkle 3s ease-in-out infinite;
+}
+
+@keyframes twinkle {
+  0%, 100% { opacity: 0.2; }
+  50% { opacity: 0.8; }
+}
+
+/* Moon */
+.moon {
+  position: absolute; top: 8%; right: 12%;
+  width: 50px; height: 50px;
+  background: radial-gradient(circle at 35% 35%, #fffde8 0%, #f5e6a3 50%, #d4c476 100%);
+  border-radius: 50%;
+  box-shadow: 0 0 40px rgba(255,250,200,0.15), 0 0 80px rgba(255,250,200,0.05);
+}
+
+/* ═══ HUD OVERLAY ═══ */
+.hud {
+  position: fixed; inset: 0;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.hud > * { pointer-events: auto; }
+
+/* ── TOP BAR ── */
+.top-bar {
+  position: absolute; top: 0; left: 0; right: 0;
+  display: flex; justify-content: space-between; align-items: flex-start;
+  padding: 16px 24px;
+}
+
+.map-indicator {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--glass);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border);
+  border-radius: 10px;
+  padding: 10px 18px;
+  animation: slideDown 0.6s ease-out;
+}
+
+@keyframes slideDown {
+  from { transform: translateY(-30px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.map-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 10px var(--accent), 0 0 20px rgba(255,69,0,0.3);
+  animation: dotPulse 2s ease-in-out infinite;
+}
+
+@keyframes dotPulse {
+  0%, 100% { box-shadow: 0 0 10px var(--accent); }
+  50% { box-shadow: 0 0 20px var(--accent), 0 0 40px rgba(255,69,0,0.4); }
+}
+
+.map-label {
+  font-family: 'Orbitron', monospace;
+  font-size: 13px; font-weight: 600;
+  letter-spacing: 3px; text-transform: uppercase;
+  color: var(--accent);
+}
+
+.map-sub {
+  font-size: 10px; color: var(--dim);
+  letter-spacing: 1px; margin-top: 2px;
+  font-family: 'Rajdhani', sans-serif;
+}
+
+/* Time display */
+.time-display {
+  text-align: right;
+  background: var(--glass);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border);
+  border-radius: 10px;
+  padding: 10px 18px;
+  animation: slideDown 0.6s 0.1s ease-out both;
+}
+
+.time-main {
+  font-family: 'Orbitron', monospace;
+  font-size: 22px; font-weight: 700;
+  color: var(--cyan);
+  text-shadow: 0 0 15px var(--cyan-dim);
+  letter-spacing: 2px;
+}
+
+.time-label {
+  font-size: 10px; color: var(--dim);
+  letter-spacing: 2px; text-transform: uppercase;
+}
+
+/* ── MINIMAP ── */
+.minimap {
+  position: absolute; top: 70px; right: 24px;
+  width: 180px; height: 180px;
+  background: var(--glass);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  overflow: hidden;
+  animation: slideLeft 0.6s 0.2s ease-out both;
+}
+
+@keyframes slideLeft {
+  from { transform: translateX(40px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+.minimap-grid {
+  position: absolute; inset: 0;
+  background: 
+    repeating-linear-gradient(0deg, rgba(0,229,255,0.03) 0px, transparent 1px, transparent 20px),
+    repeating-linear-gradient(90deg, rgba(0,229,255,0.03) 0px, transparent 1px, transparent 20px);
+}
+
+.minimap-road {
+  position: absolute;
+  background: rgba(255,255,255,0.12);
+  border-radius: 2px;
+}
+
+.minimap-player {
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 0; height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-bottom: 12px solid var(--cyan);
+  filter: drop-shadow(0 0 6px var(--cyan));
+  animation: playerPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes playerPulse {
+  0%, 100% { filter: drop-shadow(0 0 6px var(--cyan)); }
+  50% { filter: drop-shadow(0 0 12px var(--cyan)) drop-shadow(0 0 20px rgba(0,229,255,0.3)); }
+}
+
+.minimap-biome {
+  position: absolute; bottom: 6px; left: 6px; right: 6px;
+  display: flex; gap: 4px;
+}
+
+.biome-bar {
+  flex: 1; height: 3px; border-radius: 2px;
+  opacity: 0.3;
+}
+
+.biome-bar.active { opacity: 1; box-shadow: 0 0 6px currentColor; }
+.biome-mud { background: #8B6914; color: #8B6914; }
+.biome-drift { background: var(--accent); color: var(--accent); }
+.biome-street { background: var(--cyan); color: var(--cyan); }
+
+/* ── SPEED CLUSTER (bottom centre) ── */
+.speed-cluster {
+  position: absolute; bottom: 24px; left: 50%;
+  transform: translateX(-50%);
+  display: flex; flex-direction: column; align-items: center;
+  animation: slideUp 0.6s 0.3s ease-out both;
+}
+
+@keyframes slideUp {
+  from { transform: translateX(-50%) translateY(40px); opacity: 0; }
+  to { transform: translateX(-50%) translateY(0); opacity: 1; }
+}
+
+.speed-value {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 96px;
+  line-height: 1;
+  color: var(--white);
+  text-shadow: 0 0 30px rgba(255,255,255,0.1);
+  position: relative;
+}
+
+.speed-unit {
+  font-family: 'Orbitron', monospace;
+  font-size: 14px; font-weight: 400;
+  color: var(--dim);
+  letter-spacing: 4px;
+  margin-top: -4px;
+}
+
+.gear-indicator {
+  position: absolute; right: -50px; top: 50%;
+  transform: translateY(-50%);
+  font-family: 'Orbitron', monospace;
+  font-size: 28px; font-weight: 800;
+  color: var(--accent);
+  text-shadow: 0 0 15px rgba(255,69,0,0.5);
+}
+
+.gear-label {
+  font-size: 8px; color: var(--dim);
+  letter-spacing: 2px; text-align: center;
+}
+
+/* ── RPM BAR ── */
+.rpm-bar-container {
+  width: 320px; height: 6px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 3px;
+  margin-top: 12px;
+  overflow: hidden;
+  position: relative;
+}
+
+.rpm-fill {
+  height: 100%; border-radius: 3px;
+  background: linear-gradient(90deg, var(--cyan) 0%, var(--green) 40%, var(--yellow) 70%, var(--red) 100%);
+  width: 72%;
+  transition: width 0.3s ease;
+  box-shadow: 0 0 10px rgba(0,229,255,0.3);
+}
+
+.rpm-label {
+  font-family: 'Orbitron', monospace;
+  font-size: 9px; color: var(--dim);
+  letter-spacing: 2px; margin-top: 4px;
+}
+
+/* ── LEFT PANEL (Vehicle + Pet) ── */
+.left-panel {
+  position: absolute; bottom: 24px; left: 24px;
+  display: flex; flex-direction: column; gap: 12px;
+  animation: slideRight 0.6s 0.3s ease-out both;
+}
+
+@keyframes slideRight {
+  from { transform: translateX(-40px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+.vehicle-info {
+  background: var(--glass);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border);
+  border-radius: 10px;
+  padding: 14px 18px;
+  min-width: 220px;
+}
+
+.vehicle-name {
+  font-family: 'Orbitron', monospace;
+  font-size: 12px; font-weight: 700;
+  color: var(--white);
+  letter-spacing: 1px;
+}
+
+.vehicle-class {
+  font-size: 11px; color: var(--accent);
+  letter-spacing: 2px; text-transform: uppercase;
+  margin-top: 2px;
+}
+
+.vehicle-stats {
+  display: flex; gap: 16px; margin-top: 10px;
+}
+
+.stat {
+  display: flex; flex-direction: column; align-items: center;
+}
+
+.stat-value {
+  font-family: 'Orbitron', monospace;
+  font-size: 14px; font-weight: 700;
+  color: var(--cyan);
+}
+
+.stat-label {
+  font-size: 9px; color: var(--dim);
+  letter-spacing: 1px; text-transform: uppercase;
+}
+
+/* Fuel gauge */
+.fuel-gauge {
+  background: var(--glass);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border);
+  border-radius: 10px;
+  padding: 12px 18px;
+}
+
+.fuel-header {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 8px;
+}
+
+.fuel-label {
+  font-family: 'Orbitron', monospace;
+  font-size: 10px; font-weight: 600;
+  color: var(--dim);
+  letter-spacing: 2px;
+}
+
+.fuel-toggle {
+  font-size: 9px;
+  color: var(--green);
+  letter-spacing: 1px;
+  padding: 2px 8px;
+  border: 1px solid rgba(57,255,20,0.3);
+  border-radius: 4px;
+}
+
+.fuel-bar-bg {
+  width: 100%; height: 8px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.fuel-bar-fill {
+  height: 100%; border-radius: 4px;
+  background: linear-gradient(90deg, var(--red) 0%, var(--yellow) 30%, var(--green) 100%);
+  width: 63%;
+  box-shadow: 0 0 8px rgba(57,255,20,0.2);
+  animation: fuelDrain 20s linear infinite;
+}
+
+@keyframes fuelDrain {
+  0% { width: 63%; }
+  100% { width: 58%; }
+}
+
+.fuel-percent {
+  font-family: 'Orbitron', monospace;
+  font-size: 11px; color: var(--green);
+  margin-top: 4px;
+}
+
+/* Pet companion */
+.pet-companion {
+  background: var(--glass);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border);
+  border-radius: 10px;
+  padding: 12px 18px;
+  display: flex; align-items: center; gap: 12px;
+}
+
+.pet-avatar {
+  width: 42px; height: 42px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #2a1a3e 0%, #1a1028 100%);
+  border: 2px solid rgba(255,69,0,0.3);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px;
+  position: relative;
+}
+
+.pet-mood-dot {
+  position: absolute; bottom: -1px; right: -1px;
+  width: 10px; height: 10px;
+  background: var(--green);
+  border-radius: 50%;
+  border: 2px solid #0a0c14;
+  box-shadow: 0 0 6px rgba(57,255,20,0.5);
+}
+
+.pet-info { flex: 1; }
+
+.pet-name {
+  font-family: 'Orbitron', monospace;
+  font-size: 11px; font-weight: 600;
+  color: var(--white); letter-spacing: 1px;
+}
+
+.pet-mood {
+  font-size: 11px; color: var(--green);
+  margin-top: 1px;
+}
+
+.pet-reaction {
+  font-size: 10px; color: var(--dim);
+  font-style: italic; margin-top: 2px;
+}
+
+/* ── RIGHT PANEL (Lobby + Chat) ── */
+.right-panel {
+  position: absolute; bottom: 24px; right: 24px;
+  display: flex; flex-direction: column; gap: 12px;
+  align-items: flex-end;
+  animation: slideLeft 0.6s 0.4s ease-out both;
+}
+
+/* Lobby info */
+.lobby-info {
+  background: var(--glass);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border);
+  border-radius: 10px;
+  padding: 12px 18px;
+  min-width: 200px;
+}
+
+.lobby-header {
+  display: flex; justify-content: space-between; align-items: center;
+}
+
+.lobby-label {
+  font-family: 'Orbitron', monospace;
+  font-size: 10px; font-weight: 600;
+  color: var(--dim); letter-spacing: 2px;
+}
+
+.lobby-type {
+  font-size: 9px; color: var(--cyan);
+  padding: 2px 8px;
+  border: 1px solid var(--cyan-dim);
+  border-radius: 4px; letter-spacing: 1px;
+}
+
+.lobby-players {
+  display: flex; align-items: center; gap: 8px;
+  margin-top: 8px;
+}
+
+.player-dots {
+  display: flex; gap: 3px; flex-wrap: wrap;
+  max-width: 130px;
+}
+
+.p-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--cyan);
+  opacity: 0.7;
+}
+
+.p-dot.empty {
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.1);
+  opacity: 0.3;
+}
+
+.p-dot.you {
+  background: var(--accent);
+  box-shadow: 0 0 6px rgba(255,69,0,0.5);
+  opacity: 1;
+}
+
+.player-count {
+  font-family: 'Orbitron', monospace;
+  font-size: 13px; font-weight: 700;
+  color: var(--cyan);
+}
+
+.player-count span { color: var(--dim); font-weight: 400; }
+
+/* NPC Chat bubble */
+.npc-chat {
+  background: var(--glass);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255,69,0,0.2);
+  border-radius: 12px;
+  padding: 14px 18px;
+  max-width: 280px;
+  position: relative;
+  animation: chatPop 0.4s 1.5s ease-out both;
+}
+
+@keyframes chatPop {
+  from { transform: scale(0.9) translateY(10px); opacity: 0; }
+  to { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+.npc-chat::before {
+  content: '';
+  position: absolute; bottom: -6px; right: 24px;
+  width: 12px; height: 12px;
+  background: var(--glass);
+  border-right: 1px solid rgba(255,69,0,0.2);
+  border-bottom: 1px solid rgba(255,69,0,0.2);
+  transform: rotate(45deg);
+}
+
+.npc-name {
+  font-family: 'Orbitron', monospace;
+  font-size: 10px; font-weight: 600;
+  color: var(--accent);
+  letter-spacing: 2px; text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.npc-text {
+  font-size: 13px; color: var(--white);
+  line-height: 1.5;
+  font-style: italic;
+}
+
+.npc-text .highlight {
+  color: var(--cyan);
+  font-style: normal; font-weight: 600;
+}
+
+.chat-options {
+  display: flex; flex-direction: column; gap: 4px;
+  margin-top: 10px;
+}
+
+.chat-option {
+  font-size: 11px;
+  color: var(--cyan);
+  padding: 6px 10px;
+  background: rgba(0,229,255,0.05);
+  border: 1px solid rgba(0,229,255,0.15);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+  letter-spacing: 0.5px;
+}
+
+.chat-option:hover {
+  background: rgba(0,229,255,0.1);
+  border-color: rgba(0,229,255,0.4);
+  text-shadow: 0 0 8px var(--cyan-dim);
+}
+
+/* ── WEATHER INDICATOR ── */
+.weather {
+  position: absolute; top: 16px; left: 50%;
+  transform: translateX(-50%);
+  display: flex; align-items: center; gap: 8px;
+  background: var(--glass);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border);
+  border-radius: 8px;
+  padding: 8px 16px;
+  animation: slideDown 0.6s 0.15s ease-out both;
+}
+
+.weather-icon { font-size: 16px; }
+
+.weather-text {
+  font-family: 'Orbitron', monospace;
+  font-size: 10px; color: var(--dim);
+  letter-spacing: 2px; text-transform: uppercase;
+}
+
+.weather-temp {
+  font-family: 'Orbitron', monospace;
+  font-size: 12px; color: var(--cyan);
+  font-weight: 600;
+}
+
+/* ── MUD-O-METER ── */
+.mud-meter {
+  position: absolute; top: 70px; left: 24px;
+  background: var(--glass);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border);
+  border-radius: 10px;
+  padding: 10px 16px;
+  animation: slideRight 0.6s 0.25s ease-out both;
+}
+
+.mud-label {
+  font-family: 'Orbitron', monospace;
+  font-size: 9px; color: #8B6914;
+  letter-spacing: 2px; margin-bottom: 6px;
+}
+
+.mud-bar-bg {
+  width: 120px; height: 6px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 3px; overflow: hidden;
+}
+
+.mud-bar-fill {
+  height: 100%; border-radius: 3px;
+  background: linear-gradient(90deg, #5C4300 0%, #8B6914 50%, #A07818 100%);
+  width: 38%;
+}
+
+.mud-status {
+  font-size: 10px; color: #A07818;
+  margin-top: 3px; font-style: italic;
+}
+
+/* ── DRIFT SCORE (floating) ── */
+.drift-score {
+  position: absolute; top: 40%; right: 24px;
+  text-align: right;
+  animation: driftPop 0.5s 2s ease-out both;
+}
+
+@keyframes driftPop {
+  from { transform: translateX(30px) scale(0.8); opacity: 0; }
+  60% { transform: translateX(-5px) scale(1.05); }
+  to { transform: translateX(0) scale(1); opacity: 1; }
+}
+
+.drift-label {
+  font-family: 'Orbitron', monospace;
+  font-size: 10px; color: var(--accent);
+  letter-spacing: 3px;
+  text-shadow: 0 0 10px rgba(255,69,0,0.3);
+}
+
+.drift-value {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 52px; color: var(--accent);
+  text-shadow: 0 0 30px rgba(255,69,0,0.3), 0 0 60px rgba(255,69,0,0.1);
+  line-height: 1;
+}
+
+.drift-multi {
+  font-family: 'Orbitron', monospace;
+  font-size: 14px; color: var(--yellow);
+  text-shadow: 0 0 10px rgba(255,214,0,0.3);
+}
+
+/* ── CONCEPT LABEL ── */
+.concept-badge {
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  animation: fadeInSlow 1s 2.5s ease-out both;
+  pointer-events: none;
+}
+
+@keyframes fadeInSlow {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.concept-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 42px;
+  color: var(--white);
+  text-shadow: 0 0 40px rgba(255,255,255,0.1);
+  letter-spacing: 8px;
+  opacity: 0.12;
+}
+
+.concept-sub {
+  font-family: 'Orbitron', monospace;
+  font-size: 10px;
+  color: var(--accent);
+  letter-spacing: 6px;
+  opacity: 0.25;
+}
+
+/* ── NOTIFICATION TOAST ── */
+.toast {
+  position: absolute; top: 55px; left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(135deg, rgba(255,69,0,0.15) 0%, var(--glass) 100%);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255,69,0,0.25);
+  border-radius: 8px;
+  padding: 8px 20px;
+  display: flex; align-items: center; gap: 8px;
+  animation: toastSlide 0.5s 3s ease-out both;
+}
+
+@keyframes toastSlide {
+  from { transform: translateX(-50%) translateY(-20px); opacity: 0; }
+  to { transform: translateX(-50%) translateY(0); opacity: 1; }
+}
+
+.toast-icon { font-size: 14px; }
+
+.toast-text {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 12px; color: var(--white);
+  letter-spacing: 0.5px;
+}
+
+.toast-text strong { color: var(--accent); }
+
+/* ── Rain particles ── */
+.rain {
+  position: fixed; inset: 0;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.raindrop {
+  position: absolute;
+  width: 1px;
+  background: linear-gradient(180deg, transparent 0%, rgba(150,180,255,0.3) 100%);
+  animation: fall linear infinite;
+}
+
+@keyframes fall {
+  to { transform: translateY(100vh); }
+}
+</style>
+</head>
+<body>
+
+<!-- ═══ BACKGROUND SCENE ═══ -->
+<div class="scene">
+  <!-- Stars -->
+  <div class="stars" id="stars"></div>
+  
+  <!-- Moon -->
+  <div class="moon"></div>
+  
+  <!-- City skyline -->
+  <div class="skyline">
+    <!-- Buildings generated by JS -->
+  </div>
+  
+  <!-- Road -->
+  <div class="road">
+    <div class="road-surface"></div>
+    <div class="road-lines"></div>
+    <div class="neon-reflection" style="left: 15%; background: var(--accent);"></div>
+    <div class="neon-reflection" style="left: 45%; background: var(--cyan);"></div>
+    <div class="neon-reflection" style="left: 75%; background: #FF1493;"></div>
+  </div>
+</div>
+
+<!-- Rain -->
+<div class="rain" id="rain"></div>
+
+<!-- ═══ HUD OVERLAY ═══ -->
+<div class="hud">
+  
+  <!-- Top bar -->
+  <div class="top-bar">
+    <div class="map-indicator">
+      <div class="map-dot"></div>
+      <div>
+        <div class="map-label">Street Map</div>
+        <div class="map-sub">Central District — Sector 7</div>
+      </div>
+    </div>
+    <div class="time-display">
+      <div class="time-main" id="clock">22:47</div>
+      <div class="time-label">UK Real Time (GMT)</div>
+    </div>
+  </div>
+
+  <!-- Weather -->
+  <div class="weather">
+    <span class="weather-icon">🌧️</span>
+    <span class="weather-text">Light Rain</span>
+    <span class="weather-temp">8°C</span>
+  </div>
+
+  <!-- Toast notification -->
+  <div class="toast">
+    <span class="toast-icon">🏆</span>
+    <span class="toast-text"><strong>ACHIEVEMENT:</strong> Drifted 500m in the rain — "Puddle Dancer"</span>
+  </div>
+
+  <!-- Mud-O-Meter -->
+  <div class="mud-meter">
+    <div class="mud-label">MUD-O-METER</div>
+    <div class="mud-bar-bg"><div class="mud-bar-fill"></div></div>
+    <div class="mud-status">A bit grubby</div>
+  </div>
+
+  <!-- Minimap -->
+  <div class="minimap">
+    <div class="minimap-grid"></div>
+    <!-- Roads -->
+    <div class="minimap-road" style="width: 60%; height: 2px; top: 40%; left: 20%;"></div>
+    <div class="minimap-road" style="width: 2px; height: 50%; top: 25%; left: 50%;"></div>
+    <div class="minimap-road" style="width: 45%; height: 2px; top: 65%; left: 30%;"></div>
+    <div class="minimap-road" style="width: 2px; height: 30%; top: 40%; left: 75%;"></div>
+    <div class="minimap-road" style="width: 35%; height: 2px; top: 30%; left: 10%; transform: rotate(25deg);"></div>
+    <!-- Player -->
+    <div class="minimap-player"></div>
+    <!-- Biome bars -->
+    <div class="minimap-biome">
+      <div class="biome-bar biome-mud"></div>
+      <div class="biome-bar biome-drift"></div>
+      <div class="biome-bar biome-street active"></div>
+    </div>
+  </div>
+
+  <!-- Drift score -->
+  <div class="drift-score">
+    <div class="drift-label">DRIFT SCORE</div>
+    <div class="drift-value">12,847</div>
+    <div class="drift-multi">x3.2 MULTIPLIER</div>
+  </div>
+
+  <!-- Speed cluster -->
+  <div class="speed-cluster">
+    <div class="speed-value">
+      <span id="speed">147</span>
+      <div class="gear-indicator">
+        <div class="gear-label">GEAR</div>
+        4
+      </div>
+    </div>
+    <div class="speed-unit">MPH</div>
+    <div class="rpm-bar-container">
+      <div class="rpm-fill" id="rpmFill"></div>
+    </div>
+    <div class="rpm-label">6,400 RPM</div>
+  </div>
+
+  <!-- Left panel -->
+  <div class="left-panel">
+    <div class="vehicle-info">
+      <div class="vehicle-name">Nissan Skyline GT-R R34</div>
+      <div class="vehicle-class">Sports Car — JDM Legend</div>
+      <div class="vehicle-stats">
+        <div class="stat">
+          <div class="stat-value">562</div>
+          <div class="stat-label">BHP</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value">3.4s</div>
+          <div class="stat-label">0-60</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value">198</div>
+          <div class="stat-label">TOP</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="fuel-gauge">
+      <div class="fuel-header">
+        <span class="fuel-label">⛽ FUEL</span>
+        <span class="fuel-toggle">ON</span>
+      </div>
+      <div class="fuel-bar-bg"><div class="fuel-bar-fill"></div></div>
+      <div class="fuel-percent">63% — ~45 miles remaining</div>
+    </div>
+
+    <div class="pet-companion">
+      <div class="pet-avatar">
+        🐱
+        <div class="pet-mood-dot"></div>
+      </div>
+      <div class="pet-info">
+        <div class="pet-name">WHISKERS</div>
+        <div class="pet-mood">😼 Unimpressed</div>
+        <div class="pet-reaction">"Giving you the side-eye from the dashboard"</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right panel -->
+  <div class="right-panel">
+    <div class="npc-chat">
+      <div class="npc-name">🔧 Dave the Mechanic</div>
+      <div class="npc-text">
+        "Oi oi! Nice Skyline. Shame about the <span class="highlight">massive dent</span> in the door though. What'd you hit — a wall or your own ego?"
+      </div>
+      <div class="chat-options">
+        <div class="chat-option">💬 "It's a racing stripe. A 3D one."</div>
+        <div class="chat-option">💬 "Can you fix it or just roast me?"</div>
+        <div class="chat-option">💬 "You should see the wall."</div>
+      </div>
+    </div>
+
+    <div class="lobby-info">
+      <div class="lobby-header">
+        <span class="lobby-label">LOBBY</span>
+        <span class="lobby-type">PUBLIC</span>
+      </div>
+      <div class="lobby-players">
+        <div class="player-dots">
+          <div class="p-dot you"></div>
+          <div class="p-dot"></div>
+          <div class="p-dot"></div>
+          <div class="p-dot"></div>
+          <div class="p-dot"></div>
+          <div class="p-dot"></div>
+          <div class="p-dot"></div>
+          <div class="p-dot"></div>
+          <div class="p-dot"></div>
+          <div class="p-dot"></div>
+          <div class="p-dot"></div>
+          <div class="p-dot"></div>
+          <div class="p-dot empty"></div>
+          <div class="p-dot empty"></div>
+          <div class="p-dot empty"></div>
+          <div class="p-dot empty"></div>
+          <div class="p-dot empty"></div>
+          <div class="p-dot empty"></div>
+          <div class="p-dot empty"></div>
+          <div class="p-dot empty"></div>
+        </div>
+        <div class="player-count">12<span>/20</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Centre concept label -->
+  <div class="concept-badge">
+    <div class="concept-title">DRIFT KINGS: UNLEASHED</div>
+    <div class="concept-sub">IN-GAME HUD CONCEPT</div>
+  </div>
+</div>
+
+<script>
+// ── Generate stars ──
+const starsEl = document.getElementById('stars');
+for (let i = 0; i < 80; i++) {
+  const star = document.createElement('div');
+  star.className = 'star';
+  star.style.left = Math.random() * 100 + '%';
+  star.style.top = Math.random() * 50 + '%';
+  star.style.width = star.style.height = (Math.random() * 2 + 1) + 'px';
+  star.style.animationDelay = Math.random() * 3 + 's';
+  star.style.animationDuration = (Math.random() * 2 + 2) + 's';
+  starsEl.appendChild(star);
+}
+
+// ── Generate buildings ──
+const skyline = document.querySelector('.skyline');
+const buildingData = [
+  { left: 2, width: 45, height: 55 },
+  { left: 5, width: 30, height: 72 },
+  { left: 10, width: 50, height: 48 },
+  { left: 14, width: 25, height: 85 },
+  { left: 18, width: 40, height: 62 },
+  { left: 22, width: 55, height: 38 },
+  { left: 28, width: 35, height: 78 },
+  { left: 32, width: 28, height: 55 },
+  { left: 36, width: 45, height: 92 },
+  { left: 40, width: 30, height: 65 },
+  { left: 44, width: 50, height: 45 },
+  { left: 49, width: 25, height: 70 },
+  { left: 53, width: 40, height: 58 },
+  { left: 57, width: 55, height: 82 },
+  { left: 62, width: 30, height: 50 },
+  { left: 66, width: 45, height: 75 },
+  { left: 70, width: 35, height: 60 },
+  { left: 74, width: 28, height: 88 },
+  { left: 78, width: 50, height: 42 },
+  { left: 83, width: 40, height: 68 },
+  { left: 87, width: 30, height: 55 },
+  { left: 91, width: 45, height: 78 },
+  { left: 95, width: 35, height: 48 },
+];
+
+buildingData.forEach(b => {
+  const el = document.createElement('div');
+  el.className = 'building';
+  el.style.left = b.left + '%';
+  el.style.width = b.width + 'px';
+  el.style.height = b.height + '%';
+  skyline.appendChild(el);
+});
+
+// ── Rain ──
+const rainEl = document.getElementById('rain');
+for (let i = 0; i < 60; i++) {
+  const drop = document.createElement('div');
+  drop.className = 'raindrop';
+  drop.style.left = Math.random() * 100 + '%';
+  drop.style.height = (Math.random() * 20 + 10) + 'px';
+  drop.style.animationDuration = (Math.random() * 0.5 + 0.4) + 's';
+  drop.style.animationDelay = Math.random() * 2 + 's';
+  drop.style.opacity = Math.random() * 0.3 + 0.1;
+  rainEl.appendChild(drop);
+}
+
+// ── Live clock ──
+function updateClock() {
+  const now = new Date();
+  const uk = now.toLocaleTimeString('en-GB', { 
+    timeZone: 'Europe/London', 
+    hour: '2-digit', 
+    minute: '2-digit' 
+  });
+  document.getElementById('clock').textContent = uk;
+}
+updateClock();
+setInterval(updateClock, 1000);
+
+// ── Speed fluctuation ──
+const speedEl = document.getElementById('speed');
+const rpmEl = document.getElementById('rpmFill');
+let baseSpeed = 147;
+
+setInterval(() => {
+  const delta = Math.random() * 6 - 3;
+  baseSpeed = Math.max(130, Math.min(165, baseSpeed + delta));
+  speedEl.textContent = Math.round(baseSpeed);
+  const rpmPercent = 55 + (baseSpeed - 130) / 35 * 30;
+  rpmEl.style.width = rpmPercent + '%';
+}, 300);
+</script>
+
+</body>
+</html>
